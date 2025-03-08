@@ -1,18 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>cribs++ supervisor login</title>
-    <link rel="stylesheet" href="index.css">
-  </head>
-  <body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>cribs++ supervisor login</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+  <div id="supervisor-login">
     <form>
-        <input type="username" name="supervisor-username" id="supervisor-username" placeholder="username">
-        <input type="password" name="supervisor-password" id="supervisor-password" placeholder="password">
-        <button type="submit">log in</button>
+      <input type="username" name="supervisor-username" id="supervisor-username" placeholder="username">
+      <input type="password" name="supervisor-password" id="supervisor-password" placeholder="password">
+      <button type="submit">log in</button>
     </form>
-    <script src="js/index.js"></script>
-  </body>
+  </div>
+  <!--Hidden by default-->
+  <div id="supervisor-dashboard">
+    <input type="text" name="student-crsid" id="student-crsid" placeholder="enter student crsid">
+    <div id="hints">
+      <!--hints here (hidden by defualt)-->
+      <!--this is the same view as the student has, same code to populate both-->
+      <p>hints placeholder</p>
+    </div>
+  </div>
+  <script src="js/index.js"></script>
+</body>
+
 </html>

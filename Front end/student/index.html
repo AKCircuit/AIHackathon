@@ -1,18 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>cribs++ supervisor login</title>
+    <title>cribs++ student login</title>
     <link rel="stylesheet" href="index.css">
-  </head>
-  <body>
-    <form>
-        <input type="username" name="student-username" id="student-username" placeholder="username">
-        <input type="password" name="student-password" id="student-password" placeholder="password">
-        <button type="submit">log in</button>
-    </form>
+</head>
+
+<body>
+    <div id="student-login">
+        <form>
+            <input type="username" name="student-username" id="student-username" placeholder="username">
+            <input type="password" name="student-password" id="student-password" placeholder="password">
+            <button type="submit">log in</button>
+        </form>
+    </div>
+    <!--Hidden by default-->
+    <div id="student-dashboard">
+        <div id="search">
+            <input type="text" id="module-search" placeholder="search modules...">
+            <div id="module-dropdown" class="dropdown-content"></div>
+
+
+            <!--Hidden by default-->
+            <form onsubmit="//make hints div visible">
+                <div id="selected-module-controls" class="selected-module">
+                    <h3 id="selected-module-name"></h3>
+                    <input type="text" id="paper-number" placeholder="paper number">
+                    <input type="submit" hidden>
+                    <button type="submit">show hints</button>
+                </div>
+            </form>
+
+            <div id="hints">
+                <!--hints here (hidden by defualt)-->
+                <p>hints placeholder</p>
+            </div>
+        </div>
+    </div>
     <script src="js/index.js"></script>
-  </body>
+</body>
+
 </html>
