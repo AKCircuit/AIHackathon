@@ -8,7 +8,8 @@ CREATEQ = ["""CREATE TABLE IF NOT EXISTS tblUsers (
             Supervisor BOOLEAN);""",
             """CREATE TABLE IF NOT EXISTS tblHints (
             HintID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Text VarChar(500));""",
+            Text VarChar(500)),
+            QuestionID INTEGER;""",
             """CREATE TABLE IF NOT EXISTS tblUserHints (
             UserName VarChar(50),
             HintID INTEGER,
@@ -17,6 +18,13 @@ CREATEQ = ["""CREATE TABLE IF NOT EXISTS tblUsers (
             SupervisorUserName VarChar(50),
             StudentUserName VarChar(50),
             PRIMARY KEY(SupervisorUserName, StudentUserName)
+            );""",
+            """CREATE TABLE IF NOT EXISTS tblQuestions (
+            QuestionID INTEGER PRIMARY KEY AUTOINCREMENT,
+            Module VarChar(50),
+            PaperNo Integer,
+            QuestionNo Integer,
+            SubPart VarChar(5)
             );"""]
 
 ADDUSERQ = """INSERT INTO tblUsers VALUES (?, ?, ?)"""
@@ -33,7 +41,9 @@ GETUSERHINTSQ = """SELECT HintID FROM tblUserHints WHERE UserName = ?"""
 
 GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
 
-ADDHINTQ = """INSERT INTO tblHints (Text) VALUES (?)"""
+ADDHINTQ = """INSERT INTO tblHints (Text, QuestionID) VALUES (?, ?)"""
+
+ADDQUESTIONQ = """INSERT INTO tblQuestions (Module, PaperNo, QuestionNo, SubPart) VALUES (?, ?, ?, ?) RETURNING QuestionID"""
 
 class Database:
 
@@ -75,10 +85,12 @@ class Database:
         return hints
         
 
-    def addHint(self, Text):
-        self.__cursor.execute(ADDHINTQ, (Text,))
-        '''Need to add delimiter separating
-            hints for different questions later on when the front-end is finished'''
+    def addHint(self, Text, QuestionID):
+        self.__cursor.execute(ADDHINTQ, (Text, QuestionID))
+    
+    def addQuestion(self, module, paperNo, questionNo, subPart):
+        return self.__cursor.execute(ADDQUESTIONQ, (module, paperNo, questionNo, subPart)).fetchone()[0]
+    
 
 
     
