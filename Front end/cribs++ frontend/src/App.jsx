@@ -291,7 +291,6 @@ const Hints = ({ supervisee = null }) => {
 function CrsidInput({ setSupervisee }) {
   return (
     <>
-      <p>crsid input</p>
       <input
         type="text"
         placeholder="enter student's crsid"
@@ -388,19 +387,23 @@ function StudentDashboard() {
   );
 }
 
+function MonitoredStudent({supervisee = null}) {
+  return (
+    <>
+    {supervisee && <p>monitoring {supervisee}</p>}
+    </>
+  )
+}
+
 function SupervisorDashboard() {
   const [supervisee, setSupervisee] = useState(""); // supervisees are uniquely defined by their CRSIDs
   const { setSelectedModule } = useModule();
 
-  useEffect(() => {
-    // When in supervisor mode, default to showing all modules
-    setSelectedModule("*");
-  }, []);
-
   return (
     <>
-      <p>supervisor dashboard</p>
+      <h2>supervisor dashboard</h2>
       <CrsidInput setSupervisee={setSupervisee} />
+      <MonitoredStudent supervisee={supervisee}/>
       <ModuleSearch />
       <Hints supervisee={supervisee} />
     </>
@@ -441,7 +444,7 @@ function Login({ setLoggedIn }) {
         // Dummy
         event.preventDefault();
         setLoggedIn(true);
-        setUserType(student);
+        setUserType(supervisor);
         setUser("ab123");
       }}>
         <h2> log in </h2>
