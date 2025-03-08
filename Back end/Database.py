@@ -27,6 +27,12 @@ SUPERVISORSTUDENTSQ = """SELECT StudentUserName FROM tblSupervisorStudent WHERE 
 
 ADDSTUDENTTOSUPERVISORQ = """INSERT INTO tblSupervisorStudent VALUES (?, ?)"""
 
+ADDUSERHINTQ = """INSERT INTO tblUserHint VALUES (?, ?)"""
+
+GETUSERHINTSQ = """SELECT HintID FROM tblUserHints WHERE UserName = ?"""
+
+GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
+
 class Database:
 
     def __init__(self):
@@ -56,6 +62,17 @@ class Database:
         studentsList = self.__cursor.execute(SUPERVISORSTUDENTSQ, (supervisorUserName,)).fetchall()
         return studentsList
 
+    def addStudentHint(self, userName, hintID):
+        self.__cursor.execute(ADDUSERHINTQ, (userName, hintID))
+    
+    def getUserHints(self, userName):
+        hintIDs = self.__cursor.execute(GETUSERHINTSQ, (userName,)).fetchall()
+        hints = []
+        for i in hintIDs:
+            hints.append(self.__cursor.execute(GETHINTQ, (i,)).fetchone()[0])
+        return hints
+        
+
     
 if __name__ == "__main__":
     db = Database()
@@ -67,3 +84,6 @@ if __name__ == "__main__":
     db.addUser("TestSupervisor", "abcd", True)
     db.addStudentsForSupervisor("TestSupervisor", ["TestUserA"])
     print(db.getStudentsForSupervisor("TestSupervisor"))
+
+    db.addStudentHint("TestUserA", 1)
+    db.getUserHints("TestUserA")
