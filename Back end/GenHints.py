@@ -49,5 +49,7 @@ chat_completion = client.beta.chat.completions.parse(
 
 hintsDict = loads(chat_completion.choices[0].message.content)
 
-for i in hintsDict["hints"]:
-    Database.
+def addHintsToDatabase(db):
+    for i in hintsDict["hints"]:
+        question_id = db.addQuestion("maths", 1, i["question_num"])
+        db.addHint(i["hint"], question_id)
