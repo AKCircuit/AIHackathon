@@ -2,7 +2,8 @@ import { useState, useContext, createContext, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-
+// TODO fix "1 questions" 
+// TODO add in code to request from server
 // Create contexts
 const UserContext = createContext(null);
 const ModuleContext = createContext(null);
@@ -47,7 +48,7 @@ function useModule() {
 function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee = null }) {
   const { user } = useUser();
   const [isRevealed, setIsRevealed] = useState(false);
-  
+
   function fetchIsRevealed(crsid, moduleName, paperIndex, questionId, hintId) {
     setIsRevealed(hintId % 2 == 1); // TODO replace with real server request
   }
@@ -65,18 +66,18 @@ function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee
     if (supervisee !== null) {
       return; // Supervisors can't reveal hints for students
     }
-    
+
     // Can only be set to true, never back to false
     setIsRevealed(true);
     // TODO send data to server setting that the hint has been viewed for user.
   };
-  
+
   return (
     <li className="hint-item">
       <div className="hint-container">
         <label className="hint-checkbox-label">
-          <input 
-            type="checkbox" 
+          <input
+            type="checkbox"
             checked={isRevealed}
             onChange={revealHint}
             disabled={isRevealed} // Disable after checking
@@ -84,7 +85,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee
           />
           <span className="hint-label">Reveal Hint {hintId}</span>
         </label>
-        
+
         {isRevealed && (
           <div className="hint-content">
             {hintText || `Content for hint ${hintId} would appear here`}
@@ -99,11 +100,11 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
   const [hints, setHints] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Placeholder function for fetching hint data from server
   const fetchHintData = () => {
     setIsLoading(true);
-    
+
     // TODO: Replace with actual API call
     // This is just a placeholder that simulates fetching data
     setTimeout(() => {
@@ -115,27 +116,27 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
       setIsLoading(false);
     }, 500);
   };
-  
+
   const toggleOpen = (event) => {
     event.preventDefault();
     setIsOpen(!isOpen);
-    
+
     // Fetch hints only the first time the question is opened
     if (!isOpen && hints.length === 0) {
       fetchHintData();
     }
   };
-  
+
   return (
     <li className="question-item">
       <div className="question-container">
-        <button 
+        <button
           onClick={toggleOpen}
           className={`question-button ${isOpen ? 'open' : ''}`}
         >
           Question {questionIndex + 1}
         </button>
-        
+
         {isOpen && (
           <div className="hints-container">
             {isLoading ? (
@@ -143,12 +144,12 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
             ) : (
               <ul className="hints-list">
                 {hints.map(hint => (
-                  <Hint 
+                  <Hint
                     key={hint.id}
-                    moduleName={moduleName} 
-                    paperIndex={paperIndex} 
-                    questionId={questionIndex} 
-                    hintId={hint.id} 
+                    moduleName={moduleName}
+                    paperIndex={paperIndex}
+                    questionId={questionIndex}
+                    hintId={hint.id}
                     hintText={hint.text}
                     supervisee={supervisee}
                   />
@@ -167,12 +168,12 @@ const QuestionList = ({ moduleName, paperIndex, questionCount, supervisee }) => 
   return (
     <ul className="question-list">
       {Array.from({ length: questionCount }, (_, i) => (
-        <Question 
+        <Question
           key={i}
-          moduleName={moduleName} 
-          paperIndex={paperIndex} 
-          questionIndex={i} 
-          supervisee={supervisee} 
+          moduleName={moduleName}
+          paperIndex={paperIndex}
+          questionIndex={i}
+          supervisee={supervisee}
         />
       ))}
     </ul>
@@ -183,19 +184,19 @@ const QuestionList = ({ moduleName, paperIndex, questionCount, supervisee }) => 
 const PaperItem = ({ paperIndex, questionCount, expandedPaper, handlePaperClick, moduleName, supervisee }) => {
   return (
     <li key={paperIndex} className="paper-item">
-      <button 
+      <button
         className={`paper-button ${expandedPaper === paperIndex ? 'expanded' : ''}`}
         onClick={() => handlePaperClick(paperIndex)}
       >
-        Paper {paperIndex + 1} ({questionCount} questions)
+        paper {paperIndex + 1} ({questionCount} question{questionCount > 1 ? "s" : ""})
       </button>
-      
+
       {expandedPaper === paperIndex && (
-        <QuestionList 
-          moduleName={moduleName} 
-          paperIndex={paperIndex} 
-          questionCount={questionCount} 
-          supervisee={supervisee} 
+        <QuestionList
+          moduleName={moduleName}
+          paperIndex={paperIndex}
+          questionCount={questionCount}
+          supervisee={supervisee}
         />
       )}
     </li>
@@ -210,11 +211,11 @@ const Hints = ({ supervisee = null }) => {
 
   // Check if the specified moduleId exists in the data
   if (!selectedModuleId || !module_paper_questions[selectedModuleId]) {
-    return <div className="module-menu-error">Module not found</div>;
+    return <div className="module-menu-error"></div>;
   }
 
   const papers = module_paper_questions[selectedModuleId];
-  
+
   const handlePaperClick = (paperIndex) => {
     setExpandedPaper(expandedPaper === paperIndex ? null : paperIndex);
   };
@@ -223,15 +224,15 @@ const Hints = ({ supervisee = null }) => {
     setExpandedModule(expandedModule === moduleName ? null : moduleName);
     setExpandedPaper(null); // Reset expanded paper when changing modules
   };
-  
+
   // Render papers for a single module
   if (selectedModuleId !== "*") {
     return (
       <nav className="module-menu">
         <div className="module-header">
-          {selectedModuleId.replace('_', ' ')}
+          <h3>{selectedModuleId.replaceAll('_', ' ')}</h3>
         </div>
-        
+
         <ul className="paper-list">
           {papers.map((questionCount, paperIndex) => (
             <PaperItem
@@ -247,8 +248,8 @@ const Hints = ({ supervisee = null }) => {
         </ul>
       </nav>
     );
-  } 
-  
+  }
+
   // Render all modules
   return (
     <nav className="module-menu">
@@ -257,13 +258,13 @@ const Hints = ({ supervisee = null }) => {
           .filter(([moduleName, _]) => (moduleName !== "*"))
           .map(([moduleName, papers]) => (
             <li key={moduleName} className="module-item">
-              <button 
+              <button
                 className={`module-button ${expandedModule === moduleName ? 'expanded' : ''}`}
                 onClick={() => handleModuleClick(moduleName)}
               >
-                {moduleName.replace('_', ' ')}
+                {moduleName.replaceAll('_', ' ')}
               </button>
-              
+
               {expandedModule === moduleName && (
                 <ul className="paper-list">
                   {papers.map((questionCount, paperIndex) => (
@@ -291,9 +292,9 @@ function CrsidInput({ setSupervisee }) {
   return (
     <>
       <p>crsid input</p>
-      <input 
-        type="text" 
-        placeholder="enter student's crsid" 
+      <input
+        type="text"
+        placeholder="enter student's crsid"
         onKeyUp={(event) => {
           if (event.key !== "Enter") return;
           setSupervisee(event.target.value)
@@ -308,31 +309,30 @@ function ModuleSearch() {
   const [searchActive, setSearchActive] = useState(false);
   const [results, setResults] = useState([]);
   const { setSelectedModule } = useModule(); // Move hook call here
-  
+
   return (
     <>
-      <p>module search</p>
-      <input 
-        type="text" 
-        placeholder="search modules..." 
+      <input
+        type="text"
+        placeholder="search modules..."
         onChange={(event) => {
           // simple search for now
           const searchTerm = event.target.value.toLowerCase();
           const filtered = modules.filter(m => m.replace(/_/g, " ").includes(searchTerm));
           let newResults = [];
-          
+
           for (let element of filtered) {
             newResults.push({
               id: element, // Use the actual module name as ID
               title: element.replace(/_/g, " ")
             });
           }
-          
+
           // show top 3 at most
           newResults = newResults.slice(0, 3);
           setResults(newResults);
           searchTerm.length ? setSearchActive(true) : setSearchActive(false);
-        }} 
+        }}
         onKeyUp={(event) => {
           if (event.key !== "Enter" || results.length === 0) return;
           setSelectedModule(results[0].id); // Use it directly here
@@ -340,8 +340,8 @@ function ModuleSearch() {
           event.target.value = "";
         }}
       />
-      {searchActive && <ModuleSearchDropdown 
-        results={results} 
+      {searchActive && <ModuleSearchDropdown
+        results={results}
         setSelectedModule={setSelectedModule} // Pass as prop
       />}
     </>
@@ -350,11 +350,11 @@ function ModuleSearch() {
 
 function ModuleSearchDropdown({ results = [], setSelectedModule }) {
   // Remove the useModule hook from here
-  
+
   function handleSelectResult(result) {
     setSelectedModule(result.id);
   }
-  
+
   return (
     <>
       <div>
@@ -367,9 +367,6 @@ function ModuleSearchDropdown({ results = [], setSelectedModule }) {
                 onClick={() => handleSelectResult(result)}
               >
                 <div className="result-title">{result.title}</div>
-                {result.description && (
-                  <div className="result-description">{result.description}</div>
-                )}
               </li>
             ))}
           </ul>
@@ -384,7 +381,7 @@ function ModuleSearchDropdown({ results = [], setSelectedModule }) {
 function StudentDashboard() {
   return (
     <>
-      <p>student dashboard</p>
+      <h2>student dashboard</h2>
       <ModuleSearch />
       <Hints />
     </>
@@ -394,12 +391,12 @@ function StudentDashboard() {
 function SupervisorDashboard() {
   const [supervisee, setSupervisee] = useState(""); // supervisees are uniquely defined by their CRSIDs
   const { setSelectedModule } = useModule();
-  
+
   useEffect(() => {
     // When in supervisor mode, default to showing all modules
     setSelectedModule("*");
   }, []);
-  
+
   return (
     <>
       <p>supervisor dashboard</p>
@@ -412,7 +409,7 @@ function SupervisorDashboard() {
 
 function Dashboard() {
   const { userType } = useUser();
-  
+
   return (
     <>
       {userType === student && <StudentDashboard />}
@@ -432,10 +429,9 @@ function LoginFailed() {
 function Login({ setLoggedIn }) {
   const { setUser, setUserType } = useUser();
   const [loginFailed, setLoginFailed] = useState(false);
-  
+
   return (
     <>
-      <p>Login</p>
       <form onSubmit={(event) => {
         // Real behaviour:
         // send username and password to server
@@ -447,9 +443,10 @@ function Login({ setLoggedIn }) {
         setLoggedIn(true);
         setUserType(student);
         setUser("ab123");
-      }}>  
-        <input type="username" placeholder="username"></input>
-        <input type="password" placeholder="password"></input>
+      }}>
+        <h2> log in </h2>
+        <input type="username" placeholder="username"></input> <br />
+        <input type="password" placeholder="password"></input><br />
         <button type="submit">log in</button>
       </form>
       {loginFailed && <LoginFailed />}
@@ -457,18 +454,56 @@ function Login({ setLoggedIn }) {
   );
 }
 
+function SignupFailed() {
+  return (
+    <>
+      <p>Sign up failed.</p>
+    </>
+  );
+}
+
+function Signup({ setLoggedIn }) {
+  const { setUser, setUserType } = useUser();
+  const [signupFailed, setSignupFailed] = useState(false)
+  return (
+    <>
+      <form onSubmit={(event) => {
+        // Real behaviour:
+        // send username and password to server
+        // on success, set usertype and loggedin
+        // otherwise set loginFailed to true 
+
+        // Dummy
+        event.preventDefault();
+        setLoggedIn(true);
+        setUserType(student);
+        setUser("ab123");
+      }}>
+        <h2>sign up</h2>
+        <input type="username" placeholder="username"></input> <br />
+        <input type="password" placeholder="password"></input><br />
+        <input id="supervisor-mode" type="checkbox"></input>
+        <label for="supervisor-mode"> supervisor mode &gt;:&#41;</label>
+        <p></p><br />
+        <button type="submit">sign up</button>
+      </form>
+      {signupFailed && <SignupFailed />}
+    </>
+  );
+}
+
 function App() {
   // App-level state
   const [loggedIn, setLoggedIn] = useState(false);
-  
+
   // User context state
   const [user, setUser] = useState("");
   const [userType, setUserType] = useState(student);
-  
+
   // Module context state
-  const [selectedModule, setSelectedModule] = useState(0);
-  const [selectedModuleId, setSelectedModuleId] = useState(modules[0]);
-  
+  const [selectedModule, setSelectedModule] = useState(-1);
+  const [selectedModuleId, setSelectedModuleId] = useState("");
+
   // Update selectedModuleId whenever selectedModule changes
   useEffect(() => {
     if (typeof selectedModule === 'number') {
@@ -478,7 +513,7 @@ function App() {
       setSelectedModuleId(selectedModule);
     }
   }, [selectedModule]);
-  
+
   // Context value objects
   const userContextValue = {
     user,
@@ -486,19 +521,23 @@ function App() {
     userType,
     setUserType
   };
-  
+
   const moduleContextValue = {
     selectedModule,
     setSelectedModule,
     selectedModuleId,
     setSelectedModuleId
   };
-  
+
   return (
     <UserContext.Provider value={userContextValue}>
       <ModuleContext.Provider value={moduleContextValue}>
         <div>
-          {!loggedIn && <Login setLoggedIn={setLoggedIn} />}
+          {!loggedIn && <>
+
+            <h1>cribs++</h1>
+            <Login setLoggedIn={setLoggedIn} /> <Signup />
+          </>}
         </div>
         <div>
           {loggedIn && <Dashboard />}
