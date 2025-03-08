@@ -27,7 +27,7 @@ SUPERVISORSTUDENTSQ = """SELECT StudentUserName FROM tblSupervisorStudent WHERE 
 
 ADDSTUDENTTOSUPERVISORQ = """INSERT INTO tblSupervisorStudent VALUES (?, ?)"""
 
-ADDUSERHINTQ = """INSERT INTO tblUserHint VALUES (?, ?)"""
+ADDUSERHINTQ = """INSERT INTO tblUserHints VALUES (?, ?)"""
 
 GETUSERHINTSQ = """SELECT HintID FROM tblUserHints WHERE UserName = ?"""
 
@@ -71,7 +71,7 @@ class Database:
         hintIDs = self.__cursor.execute(GETUSERHINTSQ, (userName,)).fetchall()
         hints = []
         for i in hintIDs:
-            hints.append(self.__cursor.execute(GETHINTQ, (i,)).fetchone()[0])
+            hints.append(self.__cursor.execute(GETHINTQ, (i[0],)).fetchone()[0])
         return hints
         
 
