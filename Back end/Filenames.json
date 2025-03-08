@@ -1,0 +1,14 @@
+{"module":{
+    "mechanics":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf"],
+    "mech_vib":["EP01.pdf", "EP02.pdf", "EP03.pdf"],
+    "thermo":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf", "EP05.pdf", "EP06.pdf"],
+    "structures":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf", "EP05.pdf", "EP06.pdf"],
+  "materials":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf", "EP05.pdf", "EP06.pdf"],
+  "physical_principles_electronics":["EP01.pdf"],
+  "analysis_of_circuits":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf"],
+  "ac_power":["EP01.pdf"],
+  "electromag":["EP01.pdf", "EP02.pdf"],
+  "digital":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf"],
+  "maths":["EP01.pdf", "EP02.pdf", "EP03.pdf", "EP04.pdf", "EP05.pdf", "EP06.pdf", "EP07.pdf", "EP08.pdf", "EP09.pdf", "EP10.pdf", "EP11.pdf"],
+  "computing":["EP01.pdf", "EP02.pdf"]
+}}

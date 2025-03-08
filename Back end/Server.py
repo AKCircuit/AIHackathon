@@ -14,6 +14,7 @@ def process_data():
         
         database = Database.Database()
 
+
         if "get_hint" in data.keys():
             hints = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"])
             response = {"hints":hints}
