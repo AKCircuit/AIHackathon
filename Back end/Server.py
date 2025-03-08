@@ -17,6 +17,12 @@ def process_data():
         if "get_hint" in data.keys():
             hints = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"])
             response = {"hints":hints}
+        elif "register_user" in data.keys():
+            database.addUser(data["register_user"]["user_name"], data["register_user"]["pw"])
+            response={"message":"User added"}
+        elif "authenticate" in data.keys():
+            valid = database.authenticateUser(data["authenticate"]["user_name"], data["authenticate"]["pw"])
+            response = {"valid":valid}
         else:
         # Example processing: Echoing back received data
             response = {"message": "Data received", "data": data}
