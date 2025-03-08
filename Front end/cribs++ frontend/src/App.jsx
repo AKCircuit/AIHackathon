@@ -3,6 +3,11 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
+//TODO make the search results look less ugly
+//TODO nicer login page 
+// TODO clear separation for headings
+// TODO nicer font
+
 // Create contexts
 const UserContext = createContext(null);
 const ModuleContext = createContext(null);
@@ -210,7 +215,7 @@ const Hints = ({ supervisee = null }) => {
 
   // Check if the specified moduleId exists in the data
   if (!selectedModuleId || !module_paper_questions[selectedModuleId]) {
-    return <div className="module-menu-error">Module not found</div>;
+    return <div className="module-menu-error"></div>;
   }
 
   const papers = module_paper_questions[selectedModuleId];
@@ -229,7 +234,7 @@ const Hints = ({ supervisee = null }) => {
     return (
       <nav className="module-menu">
         <div className="module-header">
-          {selectedModuleId.replace('_', ' ')}
+          <h3>{selectedModuleId.replaceAll('_', ' ')}</h3>
         </div>
         
         <ul className="paper-list">
@@ -261,7 +266,7 @@ const Hints = ({ supervisee = null }) => {
                 className={`module-button ${expandedModule === moduleName ? 'expanded' : ''}`}
                 onClick={() => handleModuleClick(moduleName)}
               >
-                {moduleName.replace('_', ' ')}
+                {moduleName.replaceAll('_', ' ')}
               </button>
               
               {expandedModule === moduleName && (
@@ -311,7 +316,6 @@ function ModuleSearch() {
   
   return (
     <>
-      <p>module search</p>
       <input 
         type="text" 
         placeholder="search modules..." 
@@ -367,9 +371,6 @@ function ModuleSearchDropdown({ results = [], setSelectedModule }) {
                 onClick={() => handleSelectResult(result)}
               >
                 <div className="result-title">{result.title}</div>
-                {result.description && (
-                  <div className="result-description">{result.description}</div>
-                )}
               </li>
             ))}
           </ul>
@@ -384,7 +385,7 @@ function ModuleSearchDropdown({ results = [], setSelectedModule }) {
 function StudentDashboard() {
   return (
     <>
-      <p>student dashboard</p>
+      <h2>student dashboard</h2>
       <ModuleSearch />
       <Hints />
     </>
@@ -435,7 +436,7 @@ function Login({ setLoggedIn }) {
   
   return (
     <>
-      <p>Login</p>
+      <h1>cribs++</h1>
       <form onSubmit={(event) => {
         // Real behaviour:
         // send username and password to server
@@ -448,8 +449,8 @@ function Login({ setLoggedIn }) {
         setUserType(student);
         setUser("ab123");
       }}>  
-        <input type="username" placeholder="username"></input>
-        <input type="password" placeholder="password"></input>
+        <input type="username" placeholder="username"></input> <br/>
+        <input type="password" placeholder="password"></input><br/>
         <button type="submit">log in</button>
       </form>
       {loginFailed && <LoginFailed />}
@@ -466,8 +467,8 @@ function App() {
   const [userType, setUserType] = useState(student);
   
   // Module context state
-  const [selectedModule, setSelectedModule] = useState(0);
-  const [selectedModuleId, setSelectedModuleId] = useState(modules[0]);
+  const [selectedModule, setSelectedModule] = useState(-1);
+  const [selectedModuleId, setSelectedModuleId] = useState("");
   
   // Update selectedModuleId whenever selectedModule changes
   useEffect(() => {
