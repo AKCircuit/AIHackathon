@@ -33,6 +33,8 @@ GETUSERHINTSQ = """SELECT HintID FROM tblUserHints WHERE UserName = ?"""
 
 GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
 
+ADDHINTQ = """INSERT INTO tblHints VALUES (Text = ?)"""
+
 class Database:
 
     def __init__(self):
@@ -73,6 +75,12 @@ class Database:
         return hints
         
 
+    def addHint(self, Text):
+        self.__cursor.execute(ADDHINTQ, (Text,))
+        '''Need to add delimiter separating
+            hints for different questions later on when the front-end is finished'''
+
+
     
 if __name__ == "__main__":
     db = Database()
@@ -84,6 +92,8 @@ if __name__ == "__main__":
     db.addUser("TestSupervisor", "abcd", True)
     db.addStudentsForSupervisor("TestSupervisor", ["TestUserA"])
     print(db.getStudentsForSupervisor("TestSupervisor"))
+
+    db.
 
     db.addStudentHint("TestUserA", 1)
     db.getUserHints("TestUserA")
