@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 import os
 import pymupdf
 from pydantic import BaseModel
+from json import loads
+import Database
 
 class Hint(BaseModel):
     question_num: int
@@ -45,4 +47,7 @@ chat_completion = client.beta.chat.completions.parse(
     response_format=Hints
 )
 
-print(chat_completion.choices[0])
+hintsDict = loads(chat_completion.choices[0].message.content)
+
+for i in hintsDict["hints"]:
+    Database.
