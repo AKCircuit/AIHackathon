@@ -14,9 +14,9 @@ class Hint(BaseModel):
 class Hints(BaseModel):
     hints: list[Hint]
 
-load_dotenv("Back end/API keys.env")
+load_dotenv(".env")
 
-client = OpenAI()
+client = OpenAI(api_key=os.getenv("API_KEY"))
 
 PATH = "Back end/ExP/" 
 with open("Back end/Test filenames.json", "r") as file:
