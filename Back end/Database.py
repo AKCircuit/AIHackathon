@@ -23,7 +23,9 @@ ADDUSERQ = """INSERT INTO tblUsers VALUES (?, ?, ?)"""
 
 AUTHENTICATEQ = """SELECT PW FROM tblUsers WHERE UserName = ?"""
 
+SUPERVISORSTUDENTSQ = """SELECT StudentUserName FROM tblSupervisorStudent WHERE SupervisorUserName = ?"""
 
+ADDSTUDENTTOSUPERVISORQ = """INSERT INTO tblSupervisorStudent VALUES (?, ?)"""
 
 class Database:
 
@@ -38,7 +40,6 @@ class Database:
     
     def authenticateUser(self, userName, PW):
         records = self.__cursor.execute(AUTHENTICATEQ, (userName,)).fetchall()
-        print(records)
         if len(records) != 1:
             return False
         else:
@@ -47,6 +48,15 @@ class Database:
             else:
                 return False
     
+    def addStudentsForSupervisor(self, supervisorUserName, studentsUserNames):
+        for i in studentsUserNames:
+            self.__cursor.execute(ADDSTUDENTTOSUPERVISORQ, (supervisorUserName, i))
+            
+    def getStudentsForSupervisor(self, supervisorUserName):
+        studentsList = self.__cursor.execute(SUPERVISORSTUDENTSQ, (supervisorUserName,)).fetchall()
+        return studentsList
+
+    
 if __name__ == "__main__":
     db = Database()
     db.addUser("TestUserA", "abcd")
@@ -54,3 +64,6 @@ if __name__ == "__main__":
     print(db.authenticateUser("TestUserA", "abc"))
     print(db.authenticateUser("TestUserB", "abcd"))
 
+    db.addUser("TestSupervisor", "abcd", True)
+    db.addStudentsForSupervisor("TestSupervisor", ["TestUserA"])
+    print(db.getStudentsForSupervisor("TestSupervisor"))
