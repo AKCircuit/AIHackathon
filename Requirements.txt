@@ -1,1 +1,6 @@
 sqlite3
+openai
+pydantic
+dotenv
+pymupdf
+flask

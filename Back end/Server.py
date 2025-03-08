@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import Database
 import GenHints
+import atexit
 
 app = Flask(__name__)
 
@@ -11,18 +12,27 @@ def process_data():
         if not data:
             return jsonify({"error": "Invalid JSON"}), 400
         
-        
-        
+        database = Database.Database()
 
+        if "get_hint" in data.keys():
+            hints = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"])
+            response = {"hints":hints}
+        else:
         # Example processing: Echoing back received data
-        response = {"message": "Data received", "data": data}
+            response = {"message": "Data received", "data": data}
         return jsonify(response)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+def closeDB():
+    db.close()
+
 if __name__ == '__main__':
     db = Database.Database()
     if not db.hintsInDatabase():
         GenHints.addHintsToDatabase(db)
+    db.close()
+    atexit.register(closeDB)
     app.run(debug=True)  # Runs on http://127.0.0.1:5000
+

@@ -8,8 +8,8 @@ CREATEQ = ["""CREATE TABLE IF NOT EXISTS tblUsers (
             Supervisor BOOLEAN);""",
             """CREATE TABLE IF NOT EXISTS tblHints (
             HintID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Text VarChar(500)),
-            QuestionID INTEGER;""",
+            Text VarChar(500),
+            QuestionID INTEGER);""",
             """CREATE TABLE IF NOT EXISTS tblUserHints (
             UserName VarChar(50),
             HintID INTEGER,
@@ -22,9 +22,8 @@ CREATEQ = ["""CREATE TABLE IF NOT EXISTS tblUsers (
             """CREATE TABLE IF NOT EXISTS tblQuestions (
             QuestionID INTEGER PRIMARY KEY AUTOINCREMENT,
             Module VarChar(50),
-            PaperNo Integer,
-            QuestionNo Integer
-            );"""]
+            PaperNo INTEGER,
+            QuestionNo INTEGER);"""]
 
 ADDUSERQ = """INSERT INTO tblUsers VALUES (?, ?, ?)"""
 
@@ -42,7 +41,9 @@ GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
 
 ADDHINTQ = """INSERT INTO tblHints (Text, QuestionID) VALUES (?, ?)"""
 
-ADDQUESTIONQ = """INSERT INTO tblQuestions (Module, PaperNo, QuestionNo) VALUES (?, ?, ?, ?) RETURNING QuestionID"""
+ADDQUESTIONQ = """INSERT INTO tblQuestions (Module, PaperNo, QuestionNo) VALUES (?, ?, ?) RETURNING QuestionID"""
+
+GETQUESTIONQ = """SELECT QuestionID FROM tblQuestions WHERE Module = ? AND PaperNo = ? AND QuestionNo = ?"""
 
 class Database:
 
@@ -51,9 +52,14 @@ class Database:
         self.__cursor = self.__conn.cursor()
         for i in CREATEQ:
             self.__cursor.execute(i)
+        self.__conn.commit()
+    
+    def close(self):
+        self.__conn.close()
     
     def addUser(self, userName, PW, supervisor=False):
         self.__cursor.execute(ADDUSERQ, (userName, PW, supervisor))
+        self.__conn.commit()
     
     def authenticateUser(self, userName, PW):
         records = self.__cursor.execute(AUTHENTICATEQ, (userName,)).fetchall()
@@ -68,6 +74,7 @@ class Database:
     def addStudentsForSupervisor(self, supervisorUserName, studentsUserNames):
         for i in studentsUserNames:
             self.__cursor.execute(ADDSTUDENTTOSUPERVISORQ, (supervisorUserName, i))
+        self.__conn.commit()
             
     def getStudentsForSupervisor(self, supervisorUserName):
         studentsList = self.__cursor.execute(SUPERVISORSTUDENTSQ, (supervisorUserName,)).fetchall()
@@ -75,6 +82,11 @@ class Database:
 
     def addStudentHint(self, userName, hintID):
         self.__cursor.execute(ADDUSERHINTQ, (userName, hintID))
+        self.__conn.commit()
+    
+    def getHint(self, Module, PaperNo, QuestionNo):
+        questionID = self.__cursor.execute(GETQUESTIONQ, (Module, PaperNo, QuestionNo)).fetchone()[0]
+        return self.__cursor.execute(GETHINTQ, (questionID,)).fetchone()[0]
     
     def getUserHints(self, userName):
         hintIDs = self.__cursor.execute(GETUSERHINTSQ, (userName,)).fetchall()
@@ -87,10 +99,17 @@ class Database:
     def addHint(self, Text, QuestionID):
         self.__cursor.execute(ADDHINTQ, (Text, QuestionID))
     
-    def addQuestion(self, module, paperNo, questionNo, subPart):
-        return self.__cursor.execute(ADDQUESTIONQ, (module, paperNo, questionNo)).fetchone()[0]
+    def addQuestion(self, module, paperNo, questionNo):
+        questionID = self.__cursor.execute(ADDQUESTIONQ, (module, paperNo, questionNo)).fetchone()[0]
+        self.__conn.commit()
+        return questionID
     
-
+    def hintsInDatabase(self):
+        records = self.__cursor.execute("""SELECT HintID FROM tblHints""").fetchall()
+        if len(records) > 0:
+            return True
+        else:
+            return False
 
     
 if __name__ == "__main__":
