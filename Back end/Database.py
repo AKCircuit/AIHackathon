@@ -23,8 +23,7 @@ CREATEQ = ["""CREATE TABLE IF NOT EXISTS tblUsers (
             QuestionID INTEGER PRIMARY KEY AUTOINCREMENT,
             Module VarChar(50),
             PaperNo Integer,
-            QuestionNo Integer,
-            SubPart VarChar(5)
+            QuestionNo Integer
             );"""]
 
 ADDUSERQ = """INSERT INTO tblUsers VALUES (?, ?, ?)"""
@@ -43,7 +42,7 @@ GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
 
 ADDHINTQ = """INSERT INTO tblHints (Text, QuestionID) VALUES (?, ?)"""
 
-ADDQUESTIONQ = """INSERT INTO tblQuestions (Module, PaperNo, QuestionNo, SubPart) VALUES (?, ?, ?, ?) RETURNING QuestionID"""
+ADDQUESTIONQ = """INSERT INTO tblQuestions (Module, PaperNo, QuestionNo) VALUES (?, ?, ?, ?) RETURNING QuestionID"""
 
 class Database:
 
@@ -89,7 +88,7 @@ class Database:
         self.__cursor.execute(ADDHINTQ, (Text, QuestionID))
     
     def addQuestion(self, module, paperNo, questionNo, subPart):
-        return self.__cursor.execute(ADDQUESTIONQ, (module, paperNo, questionNo, subPart)).fetchone()[0]
+        return self.__cursor.execute(ADDQUESTIONQ, (module, paperNo, questionNo)).fetchone()[0]
     
 
 
