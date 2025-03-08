@@ -33,7 +33,7 @@ GETUSERHINTSQ = """SELECT HintID FROM tblUserHints WHERE UserName = ?"""
 
 GETHINTQ = """SELECT Text FROM tblHints WHERE HintID = ?"""
 
-ADDHINTQ = """INSERT INTO tblHints VALUES (Text = ?)"""
+ADDHINTQ = """INSERT INTO tblHints (Text) VALUES (?)"""
 
 class Database:
 
@@ -93,7 +93,6 @@ if __name__ == "__main__":
     db.addStudentsForSupervisor("TestSupervisor", ["TestUserA"])
     print(db.getStudentsForSupervisor("TestSupervisor"))
 
-    db.
-
+    db.addHint("TestHintA")
     db.addStudentHint("TestUserA", 1)
-    db.getUserHints("TestUserA")
+    print(db.getUserHints("TestUserA"))
