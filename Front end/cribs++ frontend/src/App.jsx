@@ -619,8 +619,8 @@ function Signup({ setLoggedIn }) {
         // setUser("ab123");
       }}>
         <h2>sign up</h2>
-        <input type="username" placeholder="username"></input> <br />
-        <input type="password" placeholder="password"></input><br />
+        <input type="username" name="username" placeholder="username"></input> <br />
+        <input type="password" name="password" placeholder="password"></input><br />
         <input id="supervisor-mode" name="supervisorMode" type="checkbox"></input>
         <label for="supervisor-mode"> supervisor mode &gt;:&#41;</label>
         <p></p><br />
