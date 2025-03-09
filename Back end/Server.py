@@ -11,6 +11,7 @@ app.config['UPLOAD FOLDER']
 @app.route('/process', methods=['POST'])
 def process_data():
     try:
+        print(request.data)
         data = request.get_json()  # Parse JSON input
         if not data:
             return jsonify({"error": "Invalid JSON"}), 400

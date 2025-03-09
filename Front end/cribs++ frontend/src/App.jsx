@@ -185,7 +185,11 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
             disabled={isRevealed || isLoading} // Disable when checked or loading
             className="hint-checkbox"
           />
-          <span className="hint-label">{supervisee ? supervisee + " " : "" }{isRevealed?"":" has not "}reveal{supervisee?"ed":""} hint {hintId}</span>
+          <span className="hint-label">
+            {supervisee ? 
+            (isRevealed? (supervisee + " revealed hint " + hintId) : (supervisee + " did not reveal hint " + hintId)) 
+            : (isRevealed? ("hint " + hintId) : ("reveal hint " + hintId )) }
+          </span>
         </label>
 
         {isLoading && <div className="loading">Loading hint...</div>}
@@ -209,6 +213,66 @@ function HintFailed() {
   );
 }
 
+function CustomHint({questionIndex, paperIndex, moduleName}) {
+  const [file, setFile] = useState(null);
+  return (
+    <>
+      <div className="input-group">
+        <input id="file" type="file" onChange={async (event) => {
+              if (event.target.files) {
+                setFile(event.target.files[0]);
+              }
+        }} />
+      </div>
+      {file && (
+        <section>
+          File details:
+          <ul>
+            <li>Name: {file.name}</li>
+            <li>Type: {file.type}</li>
+            <li>Size: {file.size} bytes</li>
+          </ul>
+        </section>
+      )}
+
+      {file && (
+        <button 
+          onClick={async (event) => {
+            if (file) {
+              console.log('Uploading file...');
+          
+              const formData = new FormData();
+              formData.append('file', file);
+              console.log(formData)
+              try {
+                
+                const result = await fetch(url, {
+                  method: 'POST',
+                  headers: {
+                    "Accept":"application/json", 
+                    "Content-Type": "image/png",
+                    "X-Question-No": questionIndex+1,
+                    "X-Module": moduleName,
+                    "X-Paper-No": paperIndex + 1,
+                  },
+                  body: formData,
+                });
+          
+                const data = await result.json();
+          
+                console.log(data);
+              } catch (error) {
+                console.error(error);
+              }
+            }
+          }}
+          className="submit"
+        >Upload a file</button>
+      )}
+    </>
+  )
+}
+
 function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -225,6 +289,7 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
   };
 
   return (
+    <>
     <li className="question-item">
       <div className="question-container">
         <button
@@ -238,6 +303,7 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
           <div className="hints-container">
             {error && <HintFailed />}
             <ul className="hints-list">
+              <CustomHint moduleName={moduleName} paperIndex={paperIndex} questionIndex={questionIndex}/>
               {availableHints.map(hintId => (
                 <Hint
                   key={hintId}
@@ -253,6 +319,7 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
         )}
       </div>
     </li>
+    </>
   );
 }
 // Extracted component for question lists
