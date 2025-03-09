@@ -3,6 +3,7 @@ from flask_cors import CORS
 import Database
 import GenHints
 import atexit
+import os
 
 app = Flask(__name__)
 CORS(app) #nb if we get cors-related errors after this disable this
@@ -46,8 +47,9 @@ def process_data():
 def file_upload():
     try:
         image = request.files['file']
-        filename = app.config['UPLOAD FOLDER']+"/"+image.filename
+        filename = os.path.join(app.config['UPLOAD FOLDER'], image.filename)
         image.save(filename)
+        print(filename)
         ExPPath = GenHints.getExPPath(request.headers["X-Module"], request.headers["X-Paper-No"])
         hint = GenHints.genCustomHint(ExPPath, filename, request.headers["X-Question-No"])
         return hint
