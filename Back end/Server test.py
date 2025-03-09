@@ -14,3 +14,4 @@ if __name__ == "__main__":
     testRequest({"get_hint":{"module":"mech_vib", "paper_no":1, "question_no":4, "hint_no":2, "user_name":"TestUser1"}})
     testRequest({"user_seen_hint":{"module":"ac_power", "paper_no":1, "question_no":4, "hint_no":2, "user_name":"TestUser1"}})
     testRequest({"user_seen_hint":{"module":"ac_power", "paper_no":1, "question_no":4, "hint_no":1, "user_name":"TestUser1"}})
+    testRequest({"gen_custom_hint":{"image_path":"Back end/EP011 attempt test.png", "question_no":1, "module":"ac_power", "paper_no":1}})

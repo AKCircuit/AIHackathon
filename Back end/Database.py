@@ -136,7 +136,6 @@ class Database:
 
     def getNumQuestions(self):
         questions = self.__cursor.execute("""SELECT * FROM tblQuestions""").fetchall()
-        print(questions)
         numQuestions = {}
         for i in questions:
             if not i[1] in numQuestions.keys():

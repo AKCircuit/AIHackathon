@@ -15,6 +15,9 @@ class Hint(BaseModel):
 class Hints(BaseModel):
     hints: list[Hint]
 
+class CustomHint(BaseModel):
+    hint: str
+
 load_dotenv(".env")
 
 client = OpenAI()
@@ -88,6 +91,37 @@ def getHints(path):
     )
 
     return loads(chat_completion.choices[0].message.content)
+
+def genCustomHint(ExPPath, image, questionNo):
+
+    encodedImage = base64.b64encode(image).decode("utf-8")
+
+    images = {"role": "user",
+                "content": [
+                {"type":"image_url", "image_url":{"url":f"data:image/png;base64,{encodedImage}", "detail":"low"}}],
+    }
+
+    chat_completion = client.beta.chat.completions.parse(
+        messages=[{"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": f"My attempt at question number {questionNo} is in the png file.  Generate a hint, formatted as a JSON object. Only correct my attempt if I am wrong.  Write maths in LaTex, using '$' delimiters.",
+            },
+            {
+                "role":"user",
+                "content":"The question paper is as follows: "+getExPContents(ExPPath)
+            },
+            images
+        ],
+        model="gpt-4o",
+        response_format=CustomHint,
+        max_tokens=2048
+    )
+
+    return loads(chat_completion.choices[0].message.content)
+
+def getExPPath(module, paperNo):
+    return f"Back end\\ExP\\{module}\\"+FILENAMES["module"][module][paperNo-1]
 
 def addHintsToDatabase(db):
 

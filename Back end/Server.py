@@ -33,6 +33,11 @@ def process_data():
         elif "get_num_questions" in data.keys():
             numQuestions = database.getNumQuestions()
             response = {"num_questions":numQuestions}
+        elif "gen_custom_hint" in data.keys():
+            print(data["gen_custom_hint"]["image"])
+            ExPPath = GenHints.getExPPath(data["gen_custom_hint"]["module"], data["gen_custom_hint"]["paper_no"])
+            hint = GenHints.genCustomHint(ExPPath, data["gen_custom_hint"]["image"], data["gen_custom_hint"]["question_no"])
+            return hint
         else:
         # Example processing: Echoing back received data
             response = {"message": "Data received", "data": data}
