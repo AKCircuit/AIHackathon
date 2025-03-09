@@ -185,7 +185,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
             disabled={isRevealed || isLoading} // Disable when checked or loading
             className="hint-checkbox"
           />
-          <span className="hint-label">Reveal Hint {hintId}</span>
+          <span className="hint-label">{supervisee ? supervisee + " " : "" }{isRevealed?"":" has not "}reveal{supervisee?"ed":""} hint {hintId}</span>
         </label>
 
         {isLoading && <div className="loading">Loading hint...</div>}
