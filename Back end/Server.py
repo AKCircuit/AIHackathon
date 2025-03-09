@@ -6,18 +6,16 @@ import atexit
 
 app = Flask(__name__)
 CORS(app) #nb if we get cors-related errors after this disable this
-app.config['UPLOAD FOLDER']
+app.config['UPLOAD FOLDER'] = "Back end/Uploads"
 
 @app.route('/process', methods=['POST'])
 def process_data():
     try:
-        print(request.data)
         data = request.get_json()  # Parse JSON input
         if not data:
             return jsonify({"error": "Invalid JSON"}), 400
         
         database = Database.Database()
-
 
         if "get_hint" in data.keys():
             hint, hintID = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"], data["get_hint"]["hint_no"])
@@ -35,16 +33,25 @@ def process_data():
         elif "get_num_questions" in data.keys():
             numQuestions = database.getNumQuestions()
             response = {"num_questions":numQuestions}
-        elif "gen_custom_hint" in data.keys():
-            print(data["gen_custom_hint"]["image"])
-            ExPPath = GenHints.getExPPath(data["gen_custom_hint"]["module"], data["gen_custom_hint"]["paper_no"])
-            hint = GenHints.genCustomHint(ExPPath, data["gen_custom_hint"]["image"], data["gen_custom_hint"]["question_no"])
-            return hint
         else:
         # Example processing: Echoing back received data
             response = {"message": "Data received", "data": data}
         return jsonify(response)
 
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/file_upload', methods=['POST'])
+def file_upload():
+    try:
+        image = request.files['file']
+        filename = app.config['UPLOAD FOLDER']+"/"+image.filename
+        image.save(filename)
+        ExPPath = GenHints.getExPPath(request.headers["X-Module"], request.headers["X-Paper-No"])
+        hint = GenHints.genCustomHint(ExPPath, filename, request.headers["X-Question-No"])
+        return hint
+        
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500

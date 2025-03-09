@@ -94,7 +94,7 @@ def getHints(path):
 
 def genCustomHint(ExPPath, image, questionNo):
 
-    encodedImage = base64.b64encode(image).decode("utf-8")
+    encodedImage = encodeImage(image)
 
     images = {"role": "user",
                 "content": [
@@ -118,10 +118,13 @@ def genCustomHint(ExPPath, image, questionNo):
         max_tokens=2048
     )
 
-    return loads(chat_completion.choices[0].message.content)
+    response = loads(chat_completion.choices[0].message.content)
+    response["question_num"] = questionNo
+    response["hint_num"] = -1
+    return response
 
 def getExPPath(module, paperNo):
-    return f"Back end\\ExP\\{module}\\"+FILENAMES["module"][module][paperNo-1]
+    return f"Back end\\ExP\\{module}\\{FILENAMES["module"][module][int(paperNo)-1]}"
 
 def addHintsToDatabase(db):
 
