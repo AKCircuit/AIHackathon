@@ -2,8 +2,12 @@ import { useState, useContext, createContext, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-// TODO fix "1 questions" 
+
 // TODO add in code to request from server
+
+// backend API url
+const url = "http://localhost:5000/process"
+
 // Create contexts
 const UserContext = createContext(null);
 const ModuleContext = createContext(null);
@@ -96,25 +100,54 @@ function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee
   );
 }
 
+function HintFailed() {
+  return (
+    <>
+      <p>hint failed to load :&#40;</p>
+    </>
+  )
+}
+
 function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) {
-  const [hints, setHints] = useState([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Placeholder function for fetching hint data from server
-  const fetchHintData = () => {
+  const [hints, setHints] = useState([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hintFailed, setHintFailed] = useState(false)
+  const user = useContext(UserContext)
+  const fetchHintData = async () => {
     setIsLoading(true);
-
-    // TODO: Replace with actual API call
-    // This is just a placeholder that simulates fetching data
-    setTimeout(() => {
-      const mockHints = [
-        { id: 1, text: "This is hint 1" },
-        { id: 2, text: "This is hint 2" }
-      ];
-      setHints(mockHints);
+    for (let hintId = 0; hintId < 2; hintId++) { // TODO fix this.
+      try {
+        const request = {
+          method: "POST",
+          headers: {
+            "Accept":"application/json", 
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({"get_hint": {
+            "module": moduleName,
+            "paper_no": paperIndex + 1,
+            "question_no": questionIndex + 1,
+            "hint_no": hintId+1,
+            "user_name": user.user
+          }})
+        }
+        const response = await fetch(url, request)
+        const json = await response.json()
+        console.log(JSON.stringify(request))
+        if (!response.ok) {
+          throw new Error(`Getting hints for ${moduleName} paper ${ paperIndex + 1 } question ${questionIndex + 1} failed.`)
+        }
+        let newHints = hints
+        console.log(json["hint"])
+        newHints[hintId+1] = {id: hintId+1, text: json["hint"]}
+        setHints(newHints)
+      } catch (error) {
+        console.error(error.message);
+        setHintFailed(true)
+      }
+    }
       setIsLoading(false);
-    }, 500);
   };
 
   const toggleOpen = (event) => {
@@ -139,6 +172,7 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
 
         {isOpen && (
           <div className="hints-container">
+            {hintFailed && <HintFailed />}
             {isLoading ? (
               <div className="loading">Loading hints...</div>
             ) : (
@@ -435,21 +469,46 @@ function Login({ setLoggedIn }) {
 
   return (
     <>
-      <form onSubmit={(event) => {
+      <form onSubmit={async (event) => {
         // Real behaviour:
         // send username and password to server
         // on success, set usertype and loggedin
         // otherwise set loginFailed to true 
+        event.preventDefault()
+        try {
+          const response = await fetch(url, { // Login works - use TestUser1:defg
+            method: "POST",
+            headers: {
+              "Accept":"application/json", 
+              "Content-Type":"application/json"
+            },
+            body: JSON.stringify({"authenticate": {
+              "user_name": event.target.elements.username.value, 
+              "pw": event.target.elements.password.value}})
+          })
+          if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`)
+          }
+          const json = await response.json()
+          console.log(json)
+          setUser(event.target.elements.username.value)
+          setUserType(json["role"])
+          setLoggedIn(true)
+          setLoginFailed(false)
+        } catch (error) {
+          console.error(error.message);
+          setLoginFailed(true)
+        }
 
         // Dummy
-        event.preventDefault();
-        setLoggedIn(true);
-        setUserType(supervisor);
-        setUser("ab123");
+        // event.preventDefault();
+        // setLoggedIn(true);
+        // setUserType(supervisor);
+        // setUser("ab123");
       }}>
         <h2> log in </h2>
-        <input type="username" placeholder="username"></input> <br />
-        <input type="password" placeholder="password"></input><br />
+        <input type="username" name="username" placeholder="username"></input> <br />
+        <input type="password"  name="password" placeholder="password"></input><br />
         <button type="submit">log in</button>
       </form>
       {loginFailed && <LoginFailed />}
@@ -470,17 +529,37 @@ function Signup({ setLoggedIn }) {
   const [signupFailed, setSignupFailed] = useState(false)
   return (
     <>
-      <form onSubmit={(event) => {
+      <form onSubmit={async (event) => {
         // Real behaviour:
-        // send username and password to server
-        // on success, set usertype and loggedin
-        // otherwise set loginFailed to true 
-
+        // send username and password to server to register
+        // on success, login the user
+        // otherwise set signupFailed to true 
+        event.preventDefault()
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({"register_user": {
+              "user_name": event.target.elements.username.value, 
+              "pw": event.target.elements.password.value}})
+          })
+          if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`)
+          }
+          const json = await response.json()
+          console.log(json)
+          setUser(event.target.elements.username.value)
+          setUserType(/* TODO get this from server */ student)
+          setLoggedIn(true)
+          setSignupFailed(false)
+        } catch (error) {
+          console.error(error.message);
+          setSignupFailed(true)
+        }
         // Dummy
-        event.preventDefault();
-        setLoggedIn(true);
-        setUserType(student);
-        setUser("ab123");
+        // event.preventDefault();
+        // setLoggedIn(true);
+        // setUserType(student);
+        // setUser("ab123");
       }}>
         <h2>sign up</h2>
         <input type="username" placeholder="username"></input> <br />
