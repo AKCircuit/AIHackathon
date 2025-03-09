@@ -35,7 +35,7 @@ def getHints(path):
         messages=[{"role": "system", "content": "You are a helpful assistant."},
             {
                 "role": "user",
-                "content": "Generate JSON giving between 2 and 4 hints for each question, labelled by question number and hint number.",
+                "content": "Generate 2 hints for each question as JSON.  Each hint should be a separate JSON object, labelled by question number and hint number.",
             },
             {
                 "role":"user",
@@ -55,5 +55,7 @@ def addHintsToDatabase(db):
             hintsDict = getHints(PATH+module+"/"+FILENAMES["module"][module][paper])
 
             for i in hintsDict["hints"]:
-                question_id = db.addQuestion(module, paper+1, i["question_num"])
-                db.addHint(i["hint"], question_id)
+                questionExists, question_id = db.questionInDatabase(module, paper+1, i["question_num"])
+                if not questionExists:
+                    question_id = db.addQuestion(module, paper+1, i["question_num"])
+                db.addHint(i["hint"], question_id, i["hint_num"])

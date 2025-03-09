@@ -16,14 +16,18 @@ def process_data():
 
 
         if "get_hint" in data.keys():
-            hints = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"])
-            response = {"hints":hints}
+            hint, hintID = database.getHint(data["get_hint"]["module"], data["get_hint"]["paper_no"], data["get_hint"]["question_no"], data["get_hint"]["hint_no"])
+            database.addStudentHint(data["get_hint"]["user_name"], hintID)
+            response = {"hint":hint}
         elif "register_user" in data.keys():
-            database.addUser(data["register_user"]["user_name"], data["register_user"]["pw"])
+            database.addUser(data["register_user"]["user_name"], data["register_user"]["pw"], data["register_user"]["role"])
             response={"message":"User added"}
         elif "authenticate" in data.keys():
-            valid = database.authenticateUser(data["authenticate"]["user_name"], data["authenticate"]["pw"])
-            response = {"valid":valid}
+            valid, role = database.authenticateUser(data["authenticate"]["user_name"], data["authenticate"]["pw"])
+            response = {"valid":valid, "role":role}
+        elif "user_seen_hint" in data.keys():
+            seen, hintText = database.userSeenHint(data["user_seen_hint"]["user_name"], data["user_seen_hint"]["module"], data["user_seen_hint"]["paper_no"], data["user_seen_hint"]["question_no"], data["user_seen_hint"]["hint_no"])
+            response = {"seen_hint":seen, "hint":hintText}
         else:
         # Example processing: Echoing back received data
             response = {"message": "Data received", "data": data}
