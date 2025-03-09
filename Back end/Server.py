@@ -23,7 +23,7 @@ def process_data():
             response = {"hint":hint}
         elif "register_user" in data.keys():
             database.addUser(data["register_user"]["user_name"], data["register_user"]["pw"], data["register_user"]["role"])
-            response={"message":"User added"}
+            response={"valid":True, "role":data["register_user"]["role"]}
         elif "authenticate" in data.keys():
             valid, role = database.authenticateUser(data["authenticate"]["user_name"], data["authenticate"]["pw"])
             response = {"valid":valid, "role":role}
@@ -39,6 +39,7 @@ def process_data():
         return jsonify(response)
 
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
 
 def closeDB():
