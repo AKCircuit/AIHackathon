@@ -7,6 +7,7 @@ import "./App.css";
 
 // backend API url
 const url = "http://localhost:5000/process"
+const upload_url = "http://localhost:5000/file_upload"
 
 // Create contexts
 const UserContext = createContext(null);
@@ -24,7 +25,7 @@ const modules = [
   "digital", "maths", "computing"
 ];
 
-const module_paper_questions = {
+let module_paper_questions = {
   "mechanics": [3, 2, 5, 6],
   "mech_vib": [1],
   "thermo": [9, 9, 5],
@@ -250,11 +251,10 @@ function CustomHint({questionIndex, paperIndex, moduleName}) {
               console.log(formData)
               try {
                 
-                const result = await fetch(url, {
+                const result = await fetch(upload_url, {
                   method: 'POST',
                   headers: {
-                    "Accept":"application/json", 
-                    "Content-Type": "image/png",
+                    "Accept":"application/json",
                     "X-Question-No": questionIndex+1,
                     "X-Module": moduleName,
                     "X-Paper-No": paperIndex + 1,
@@ -592,6 +592,59 @@ function LoginFailed() {
   );
 }
 
+function convertFormat(numQuestionsObj) {
+  const result = {};
+  
+  // Initialize with empty arrays for all modules
+  Object.keys(numQuestionsObj).forEach(moduleName => {
+    result[moduleName] = [];
+  });
+  
+  // Fill in the arrays with question counts
+  Object.entries(numQuestionsObj).forEach(([moduleName, sections]) => {
+    // Find the maximum section number to determine array length
+    const maxSection = Math.max(...Object.keys(sections).map(Number));
+    
+    // Initialize array with zeros
+    result[moduleName] = Array(maxSection).fill(0);
+    
+    // Fill in the actual question counts
+    Object.entries(sections).forEach(([sectionNum, questionCount]) => {
+      // Arrays are 0-indexed, but your sections start at 1
+      result[moduleName][Number(sectionNum) - 1] = questionCount;
+    });
+  });
+  
+  return result;
+}
+
+
+async function updateModules() {
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Accept":"application/json", 
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({"get_num_questions":{}})
+    })
+    
+    if (!response.ok) {
+      throw new Error("could not get number of questions")
+    }
+
+    const json = await response.json()
+    
+    console.log(json)
+    module_paper_questions = convertFormat(json["num_questions"]);
+
+  } catch (error) {
+    console.error(error.message) // if this doesn't work then the demo is just cooked LOL
+  }
+    
+}
+
 function Login({ setLoggedIn }) {
   const { setUser, setUserType } = useUser();
   const [loginFailed, setLoginFailed] = useState(false);
@@ -604,6 +657,7 @@ function Login({ setLoggedIn }) {
         // on success, set usertype and loggedin
         // otherwise set loginFailed to true 
         event.preventDefault()
+        await updateModules()
         try {
           const response = await fetch(url, { // Login works - use TestUser1:defg
             method: "POST",
@@ -667,6 +721,7 @@ function Signup({ setLoggedIn }) {
         // on success, login the user
         // otherwise set signupFailed to true 
         event.preventDefault()
+        await updateModules()
         console.log(event.target.elements.supervisorMode.value);
         try {
           const response = await fetch(url, {
