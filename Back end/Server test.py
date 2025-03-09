@@ -8,6 +8,7 @@ def testRequest(data):
 
 if __name__ == "__main__":
     #testRequest({"register_user":{"user_name":"TestUser1", "pw":"defg", "role":"student"}})
+    testRequest({"get_num_questions":{}})
     testRequest({"authenticate":{"user_name":"TestUser1", "pw":"defg"}})
     testRequest({"get_hint":{"module":"ac_power", "paper_no":1, "question_no":4, "hint_no":2, "user_name":"TestUser1"}})
     testRequest({"user_seen_hint":{"module":"ac_power", "paper_no":1, "question_no":4, "hint_no":2, "user_name":"TestUser1"}})

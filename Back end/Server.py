@@ -30,6 +30,9 @@ def process_data():
         elif "user_seen_hint" in data.keys():
             seen, hintText = database.userSeenHint(data["user_seen_hint"]["user_name"], data["user_seen_hint"]["module"], data["user_seen_hint"]["paper_no"], data["user_seen_hint"]["question_no"], data["user_seen_hint"]["hint_no"])
             response = {"seen_hint":seen, "hint":hintText}
+        elif "get_num_questions" in data.keys():
+            numQuestions = database.getNumQuestions()
+            response = {"num_questions":numQuestions}
         else:
         # Example processing: Echoing back received data
             response = {"message": "Data received", "data": data}
