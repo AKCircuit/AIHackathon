@@ -242,9 +242,7 @@ function CustomHint({questionIndex, paperIndex, moduleName}) {
               }, { once: true }); 
             });
             
-            console.log("bef");
             const file = await filePromise; 
-            console.log("after");
             if (file) {
               console.log('Uploading file...');
           
@@ -273,8 +271,17 @@ function CustomHint({questionIndex, paperIndex, moduleName}) {
             }
           }}
           className="submit"
-        >Upload a file</button>
+        >upload your working</button>
+        
       )}
+      <Hint
+          key={-1}
+          moduleName={moduleName}
+          paperIndex={paperIndex}
+          questionId={questionIndex}
+          hintId={-1}
+          supervisee={null}
+       />
     </>
   )
 }
@@ -309,7 +316,7 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
           <div className="hints-container">
             {error && <HintFailed />}
             <ul className="hints-list">
-              <CustomHint moduleName={moduleName} paperIndex={paperIndex} questionIndex={questionIndex}/>
+              { user.userType == student && <CustomHint moduleName={moduleName} paperIndex={paperIndex} questionIndex={questionIndex}/>}
               {availableHints.map(hintId => (
                 <Hint
                   key={hintId}
