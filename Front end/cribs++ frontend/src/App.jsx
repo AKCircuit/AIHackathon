@@ -191,7 +191,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
           <span className="hint-label">
             {supervisee ? 
             (isRevealed? (supervisee + " revealed hint " + hintId) : (supervisee + " did not reveal hint " + hintId)) 
-            : (isRevealed? ("hint " + hintId) : ("reveal hint " + hintId )) }
+            : (isRevealed? ("hint " + hintId) : ( (hintId === -1) ? "personalised hint" : "reveal hint " + hintId )) }
           </span>
         </label>
 
