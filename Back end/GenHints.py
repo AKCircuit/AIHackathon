@@ -74,7 +74,7 @@ def getHints(path):
         messages=[{"role": "system", "content": "You are a helpful assistant."},
             {
                 "role": "user",
-                "content": "Generate 2 hints for each question as JSON.  Each hint should be a separate JSON object, labelled by question number and hint number. Write maths in LaTex, using '$' delimiters.",
+                "content": "Generate 2 hints for each question as JSON.  The first hint should include the key concept covered by the question.  Each hint should be a separate JSON object, labelled by question number and hint number. Write maths in LaTex, using '$' delimiters.",
             },
             {
                 "role":"user",
