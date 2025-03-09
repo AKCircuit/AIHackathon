@@ -10,6 +10,7 @@ CORS(app) #nb if we get cors-related errors after this disable this
 @app.route('/process', methods=['POST'])
 def process_data():
     try:
+        print(request.data)
         data = request.get_json()  # Parse JSON input
         if not data:
             return jsonify({"error": "Invalid JSON"}), 400
