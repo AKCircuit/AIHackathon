@@ -17,7 +17,7 @@ class Hints(BaseModel):
 
 load_dotenv(".env")
 
-client = OpenAI(api_key=os.getenv("API_KEY"))
+client = OpenAI()
 
 PATH = "Back end/ExP/" 
 with open("Back end/Test filenames.json", "r") as file:

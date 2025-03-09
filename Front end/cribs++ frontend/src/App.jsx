@@ -595,6 +595,10 @@ function Signup({ setLoggedIn }) {
         try {
           const response = await fetch(url, {
             method: "POST",
+            headers: {
+              "Accept":"application/json", 
+              "Content-Type":"application/json"
+            },
             body: JSON.stringify({"register_user": {
               "user_name": event.target.elements.username.value, 
               "pw": event.target.elements.password.value,
@@ -675,7 +679,7 @@ function App() {
           {!loggedIn && <>
 
             <h1>cribs++</h1>
-            <Login setLoggedIn={setLoggedIn} /> <Signup />
+            <Login setLoggedIn={setLoggedIn} /> <Signup setLoggedIn={setLoggedIn} />
           </>}
         </div>
         <div>
