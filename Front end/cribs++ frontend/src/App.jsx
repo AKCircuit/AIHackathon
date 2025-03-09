@@ -52,7 +52,7 @@ function useModule() {
   return useContext(ModuleContext);
 }
 
-function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null }) {
+function Hint({ moduleName, paperIndex, questionId, hintId, extHintText = null, supervisee = null }) {
   const { user } = useUser();
   const [isRevealed, setIsRevealed] = useState(false);
   const [hintText, setHintText] = useState("");
@@ -91,7 +91,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
       }
     } catch (error) {
       console.error(error.message);
-      setError("this hint does not exist!");
+      setError("no file uploaded");
     }
   }
 
@@ -200,7 +200,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
         
         {isRevealed && !isLoading && (
           <div className="hint-content">
-            <Latex>{hintText || `Content for hint ${hintId} would appear here`}</Latex>
+            <Latex>{extHintText || hintText || `Content for hint ${hintId} would appear here`}</Latex>
           </div>
         )}
       </div>
@@ -218,72 +218,103 @@ function HintFailed() {
 
 function CustomHint({questionIndex, paperIndex, moduleName}) {
   const [file, setFile] = useState(null);
+  const [hintData, setHintData] = useState(null);
+  const [isRevealed, setIsRevealed] = useState(false); // Add this to track reveal state
+  
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const result = await fetch(upload_url, {
+        method: 'POST',
+        headers: {
+          "Accept": "application/json",
+          "X-Question-No": questionIndex + 1,
+          "X-Module": moduleName,
+          "X-Paper-No": paperIndex + 1,
+        },
+        body: formData,
+      });
+      
+      const data = await result.json();
+      console.log("Response data:", data);
+      
+      if (data && data.hint !== undefined) {
+        setHintData(data.hint);
+        setFile(file);
+        setIsRevealed(true); // Auto-reveal when we get a hint
+      }
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  };
+  
   return (
     <>
       <div className="input-group">
-        <input id={"file"+paperIndex+"-"+questionIndex} type="file"  style={{display: "none"}} onChange={async (event) => {
-              if (event.target.files) {
-                setFile(event.target.files[0]);
-              }
-        }} />
+        <input 
+          id={`file${paperIndex}-${questionIndex}`} 
+          type="file"  
+          style={{display: "none"}} 
+          onChange={async (event) => {
+            if (event.target.files) {
+              setFile(event.target.files[0]);
+              await handleFileUpload(event.target.files[0]);
+            }
+          }} 
+        />
       </div>
-
+      
       {!file && (
-        <button 
-          onClick={async (event) => {
-            document.getElementById("file"+paperIndex+"-"+questionIndex).click();
-
+        <button
+          onClick={async () => {
+            document.getElementById(`file${paperIndex}-${questionIndex}`).click();
+            
             let filePromise = new Promise(resolve => {
-              const fileInput = document.getElementById("file"+paperIndex+"-"+questionIndex);
+              const fileInput = document.getElementById(`file${paperIndex}-${questionIndex}`);
               
               fileInput.addEventListener('change', function handleChange(event) {
                 fileInput.removeEventListener('change', handleChange);
                 resolve(event.target.files[0]);
-              }, { once: true }); 
+              }, { once: true });
             });
             
-            const file = await filePromise; 
-            if (file) {
-              console.log('Uploading file...');
-          
-              const formData = new FormData();
-              formData.append('file', file);
-              console.log(formData)
-              try {
-                
-                const result = await fetch(upload_url, {
-                  method: 'POST',
-                  headers: {
-                    "Accept":"application/json",
-                    "X-Question-No": questionIndex+1,
-                    "X-Module": moduleName,
-                    "X-Paper-No": paperIndex + 1,
-                  },
-                  body: formData,
-                });
-          
-                const data = await result.json();
-          
-                console.log(data);
-              } catch (error) {
-                console.error(error);
-              }
-            }
+            const file = await filePromise;
+            await handleFileUpload(file);
           }}
           className="submit"
-        >upload your working</button>
-        
+        >
+          upload your working
+        </button>
       )}
-      <Hint
-          key={-1}
-          moduleName={moduleName}
-          paperIndex={paperIndex}
-          questionId={questionIndex}
-          hintId={-1}
-          supervisee={null}
-       />
+      
+      <li className="hint-item">
+        <div className="hint-container">
+          <label className="hint-checkbox-label">
+            <input
+              type="checkbox"
+              checked={isRevealed}
+              onChange={() => setIsRevealed(true)}
+              disabled={isRevealed || !hintData}
+              className="hint-checkbox"
+            />
+            <span className="hint-label">
+              {isRevealed ? "personalised hint" : "reveal personalised hint"}
+            </span>
+          </label>
+          
+          {isRevealed && hintData && (
+            <div className="hint-content">
+              <Latex>{hintData}</Latex>
+            </div>
+          )}
+        </div>
+      </li>
     </>
-  )
+  );
 }
 
 function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) {
