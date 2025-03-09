@@ -2,6 +2,8 @@ import { useState, useContext, createContext, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import 'katex/dist/katex.min.css';
+import Latex from 'react-latex-next';
 
 // TODO add in code to request from server
 
@@ -198,7 +200,7 @@ function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null })
         
         {isRevealed && !isLoading && (
           <div className="hint-content">
-            {hintText || `Content for hint ${hintId} would appear here`}
+            <Latex>{hintText || `Content for hint ${hintId} would appear here`}</Latex>
           </div>
         )}
       </div>
