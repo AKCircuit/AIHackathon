@@ -548,6 +548,10 @@ function Login({ setLoggedIn }) {
             throw new Error(`Response status: ${response.status}`)
           }
           const json = await response.json()
+          console.log(json)
+          if (!json["valid"]) {
+            throw new Error(`invalid login`)
+          }
           setUser(event.target.elements.username.value)
           setUserType(json["role"])
           setLoggedIn(true)
@@ -592,6 +596,7 @@ function Signup({ setLoggedIn }) {
         // on success, login the user
         // otherwise set signupFailed to true 
         event.preventDefault()
+        console.log(event.target.elements.supervisorMode.value);
         try {
           const response = await fetch(url, {
             method: "POST",
@@ -602,12 +607,13 @@ function Signup({ setLoggedIn }) {
             body: JSON.stringify({"register_user": {
               "user_name": event.target.elements.username.value, 
               "pw": event.target.elements.password.value,
-              "role": event.target.elements.supervisorMode.value ? supervisor : student}})
+              "role": event.target.elements.supervisorMode.checked ? supervisor : student}})
           })
           if (!response.ok) {
             throw new Error(`Response status: ${response.status}`)
           }
           const json = await response.json()
+          console.log(json)
           setUser(event.target.elements.username.value)
           setUserType(json["role"])
           setLoggedIn(true)
@@ -626,7 +632,7 @@ function Signup({ setLoggedIn }) {
         <input type="username" name="username" placeholder="username"></input> <br />
         <input type="password" name="password" placeholder="password"></input><br />
         <input id="supervisor-mode" name="supervisorMode" type="checkbox"></input>
-        <label for="supervisor-mode"> supervisor mode &gt;:&#41;</label>
+        <label htmlFor="supervisor-mode"> supervisor mode &gt;:&#41;</label>
         <p></p><br />
         <button type="submit">sign up</button>
       </form>
