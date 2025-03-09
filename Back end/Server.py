@@ -6,6 +6,7 @@ import atexit
 
 app = Flask(__name__)
 CORS(app) #nb if we get cors-related errors after this disable this
+app.config['UPLOAD FOLDER']
 
 @app.route('/process', methods=['POST'])
 def process_data():
