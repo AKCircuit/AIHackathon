@@ -111,9 +111,6 @@ class Database:
         else:
             return False, ""
 
-
-        
-
     def addHint(self, Text, QuestionID, HintNo):
         self.__cursor.execute(ADDHINTQ, (Text, QuestionID, HintNo))
         self.__conn.commit()
@@ -137,6 +134,18 @@ class Database:
         else:
             return False
 
+    def getNumQuestions(self):
+        questions = self.__cursor.execute("""SELECT * FROM tblQuestions""").fetchall()
+        print(questions)
+        numQuestions = {}
+        for i in questions:
+            if not i[1] in numQuestions.keys():
+                numQuestions[i[1]] = {}
+            if not i[2] in numQuestions[i[1]].keys():
+                numQuestions[i[1]][i[2]] = 1
+            else:
+                numQuestions[i[1]][i[2]] += 1
+        return numQuestions
     
 if __name__ == "__main__":
     db = Database()

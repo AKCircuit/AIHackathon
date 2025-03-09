@@ -2,8 +2,12 @@ import { useState, useContext, createContext, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-// TODO fix "1 questions" 
+
 // TODO add in code to request from server
+
+// backend API url
+const url = "http://localhost:5000/process"
+
 // Create contexts
 const UserContext = createContext(null);
 const ModuleContext = createContext(null);
@@ -45,31 +49,129 @@ function useModule() {
   return useContext(ModuleContext);
 }
 
-function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee = null }) {
+function Hint({ moduleName, paperIndex, questionId, hintId, supervisee = null }) {
   const { user } = useUser();
   const [isRevealed, setIsRevealed] = useState(false);
+  const [hintText, setHintText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  function fetchIsRevealed(crsid, moduleName, paperIndex, questionId, hintId) {
-    setIsRevealed(hintId % 2 == 1); // TODO replace with real server request
+  // Check if hint was previously revealed
+  async function fetchIsRevealed(crsid, moduleName, paperIndex, questionId, hintId) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Accept":"application/json", 
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({"user_seen_hint":{
+          "module": moduleName,
+          "paper_no": paperIndex + 1,
+          "question_no": questionId + 1,
+          "hint_no": hintId,
+          "user_name": crsid
+        }})
+      });
+      
+      if (!response.ok) {
+        throw new Error("fetchIsRevealed failed :(");
+      }
+      
+      const json = await response.json();
+      const revealed = json["seen_hint"];
+      setIsRevealed(revealed);
+      
+      // If hint was previously revealed, fetch the hint content
+      if (revealed) {
+        await fetchHintContent(crsid, moduleName, paperIndex, questionId, hintId);
+      }
+    } catch (error) {
+      console.error(error.message);
+      setError("this hint does not exist!");
+    }
+  }
+
+  // Fetch the actual hint content
+  async function fetchHintContent(crsid, moduleName, paperIndex, questionId, hintId) {
+    setIsLoading(true);
+    try {
+      const request = {
+        method: "POST",
+        headers: {
+          "Accept":"application/json", 
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({"get_hint": {
+          "module": moduleName,
+          "paper_no": paperIndex + 1,
+          "question_no": questionId + 1,
+          "hint_no": hintId,
+          "user_name": crsid
+        }})
+      };
+      
+      const response = await fetch(url, request);
+      
+      if (!response.ok) {
+        throw new Error(`Getting hint for ${moduleName} paper ${paperIndex + 1} question ${questionId + 1} hint ${hintId} failed.`);
+      }
+      
+      const json = await response.json();
+      setHintText(json["hint"]);
+    } catch (error) {
+      console.error(error.message);
+      setError("Failed to load hint content");
+      setHintText("Hint failed to load :(");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
-    // Fetch revealed status on component mount
-    if (supervisee !== null) {
-      fetchIsRevealed(supervisee, moduleName, paperIndex, questionId, hintId);
-    } else {
-      fetchIsRevealed(user, moduleName, paperIndex, questionId, hintId);
-    }
+    // Check if hint was previously revealed on component mount
+    const effectiveCrsid = supervisee !== null ? supervisee : user;
+    fetchIsRevealed(effectiveCrsid, moduleName, paperIndex, questionId, hintId);
   }, [user, supervisee, moduleName, paperIndex, questionId, hintId]);
 
-  const revealHint = () => {
+  const revealHint = async () => {
     if (supervisee !== null) {
       return; // Supervisors can't reveal hints for students
     }
 
     // Can only be set to true, never back to false
     setIsRevealed(true);
-    // TODO send data to server setting that the hint has been viewed for user.
+    setIsLoading(true);
+    
+    try {
+      // Record that hint has been viewed
+      const revealResponse = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Accept":"application/json", 
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          "record_hint_viewed": {
+            "module": moduleName,
+            "paper_no": paperIndex + 1,
+            "question_no": questionId + 1,
+            "hint_no": hintId,
+            "user_name": user
+          }
+        })
+      });
+      
+      if (!revealResponse.ok) {
+        throw new Error("Failed to record hint view");
+      }
+      
+      // Fetch the hint content
+      await fetchHintContent(user, moduleName, paperIndex, questionId, hintId);
+    } catch (error) {
+      console.error(error.message);
+      setError("Failed to reveal hint");
+    }
   };
 
   return (
@@ -80,13 +182,16 @@ function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee
             type="checkbox"
             checked={isRevealed}
             onChange={revealHint}
-            disabled={isRevealed} // Disable after checking
+            disabled={isRevealed || isLoading} // Disable when checked or loading
             className="hint-checkbox"
           />
           <span className="hint-label">Reveal Hint {hintId}</span>
         </label>
 
-        {isRevealed && (
+        {isLoading && <div className="loading">Loading hint...</div>}
+        {error && <div className="error">{error}</div>}
+        
+        {isRevealed && !isLoading && (
           <div className="hint-content">
             {hintText || `Content for hint ${hintId} would appear here`}
           </div>
@@ -96,35 +201,27 @@ function Hint({ moduleName, paperIndex, questionId, hintId, hintText, supervisee
   );
 }
 
+function HintFailed() {
+  return (
+    <>
+      <p>hint failed to load :&#40;</p>
+    </>
+  );
+}
+
 function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) {
-  const [hints, setHints] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // Placeholder function for fetching hint data from server
-  const fetchHintData = () => {
-    setIsLoading(true);
-
-    // TODO: Replace with actual API call
-    // This is just a placeholder that simulates fetching data
-    setTimeout(() => {
-      const mockHints = [
-        { id: 1, text: "This is hint 1" },
-        { id: 2, text: "This is hint 2" }
-      ];
-      setHints(mockHints);
-      setIsLoading(false);
-    }, 500);
-  };
+  const [error, setError] = useState(null);
+  const user = useContext(UserContext);
+  
+  // Hardcoded hint count since backend doesn't support metadata fetching yet
+  const hintCount = 2;
+  const availableHints = Array.from({ length: hintCount }, (_, i) => i + 1);
 
   const toggleOpen = (event) => {
     event.preventDefault();
     setIsOpen(!isOpen);
-
-    // Fetch hints only the first time the question is opened
-    if (!isOpen && hints.length === 0) {
-      fetchHintData();
-    }
   };
 
   return (
@@ -139,30 +236,25 @@ function Question({ moduleName, paperIndex, questionIndex, supervisee = null }) 
 
         {isOpen && (
           <div className="hints-container">
-            {isLoading ? (
-              <div className="loading">Loading hints...</div>
-            ) : (
-              <ul className="hints-list">
-                {hints.map(hint => (
-                  <Hint
-                    key={hint.id}
-                    moduleName={moduleName}
-                    paperIndex={paperIndex}
-                    questionId={questionIndex}
-                    hintId={hint.id}
-                    hintText={hint.text}
-                    supervisee={supervisee}
-                  />
-                ))}
-              </ul>
-            )}
+            {error && <HintFailed />}
+            <ul className="hints-list">
+              {availableHints.map(hintId => (
+                <Hint
+                  key={hintId}
+                  moduleName={moduleName}
+                  paperIndex={paperIndex}
+                  questionId={questionIndex}
+                  hintId={hintId}
+                  supervisee={supervisee}
+                />
+              ))}
+            </ul>
           </div>
         )}
       </div>
     </li>
   );
 }
-
 // Extracted component for question lists
 const QuestionList = ({ moduleName, paperIndex, questionCount, supervisee }) => {
   return (
@@ -435,21 +527,45 @@ function Login({ setLoggedIn }) {
 
   return (
     <>
-      <form onSubmit={(event) => {
+      <form onSubmit={async (event) => {
         // Real behaviour:
         // send username and password to server
         // on success, set usertype and loggedin
         // otherwise set loginFailed to true 
+        event.preventDefault()
+        try {
+          const response = await fetch(url, { // Login works - use TestUser1:defg
+            method: "POST",
+            headers: {
+              "Accept":"application/json", 
+              "Content-Type":"application/json"
+            },
+            body: JSON.stringify({"authenticate": {
+              "user_name": event.target.elements.username.value, 
+              "pw": event.target.elements.password.value}})
+          })
+          if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`)
+          }
+          const json = await response.json()
+          setUser(event.target.elements.username.value)
+          setUserType(json["role"])
+          setLoggedIn(true)
+          setLoginFailed(false)
+        } catch (error) {
+          console.error(error.message);
+          setLoginFailed(true)
+        }
 
         // Dummy
-        event.preventDefault();
-        setLoggedIn(true);
-        setUserType(supervisor);
-        setUser("ab123");
+        // event.preventDefault();
+        // setLoggedIn(true);
+        // setUserType(supervisor);
+        // setUser("ab123");
       }}>
         <h2> log in </h2>
-        <input type="username" placeholder="username"></input> <br />
-        <input type="password" placeholder="password"></input><br />
+        <input type="username" name="username" placeholder="username"></input> <br />
+        <input type="password"  name="password" placeholder="password"></input><br />
         <button type="submit">log in</button>
       </form>
       {loginFailed && <LoginFailed />}
@@ -470,22 +586,42 @@ function Signup({ setLoggedIn }) {
   const [signupFailed, setSignupFailed] = useState(false)
   return (
     <>
-      <form onSubmit={(event) => {
+      <form onSubmit={async (event) => {
         // Real behaviour:
-        // send username and password to server
-        // on success, set usertype and loggedin
-        // otherwise set loginFailed to true 
-
+        // send username and password to server to register
+        // on success, login the user
+        // otherwise set signupFailed to true 
+        event.preventDefault()
+        try {
+          const response = await fetch(url, {
+            method: "POST",
+            body: JSON.stringify({"register_user": {
+              "user_name": event.target.elements.username.value, 
+              "pw": event.target.elements.password.value,
+              "role": event.target.elements.supervisorMode.value ? supervisor : student}})
+          })
+          if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`)
+          }
+          const json = await response.json()
+          setUser(event.target.elements.username.value)
+          setUserType(json["role"])
+          setLoggedIn(true)
+          setSignupFailed(false)
+        } catch (error) {
+          console.error(error.message);
+          setSignupFailed(true)
+        }
         // Dummy
-        event.preventDefault();
-        setLoggedIn(true);
-        setUserType(student);
-        setUser("ab123");
+        // event.preventDefault();
+        // setLoggedIn(true);
+        // setUserType(student);
+        // setUser("ab123");
       }}>
         <h2>sign up</h2>
         <input type="username" placeholder="username"></input> <br />
         <input type="password" placeholder="password"></input><br />
-        <input id="supervisor-mode" type="checkbox"></input>
+        <input id="supervisor-mode" name="supervisorMode" type="checkbox"></input>
         <label for="supervisor-mode"> supervisor mode &gt;:&#41;</label>
         <p></p><br />
         <button type="submit">sign up</button>

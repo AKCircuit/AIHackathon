@@ -59,3 +59,4 @@ def addHintsToDatabase(db):
                 if not questionExists:
                     question_id = db.addQuestion(module, paper+1, i["question_num"])
                 db.addHint(i["hint"], question_id, i["hint_num"])
+    
