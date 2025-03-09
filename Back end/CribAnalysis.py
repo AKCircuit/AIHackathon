@@ -21,27 +21,28 @@ for i in range(count):
     pix.save(val)
 doc.close()
 
-summaries = {}
+def encodeImage(path):
+    with open(path, "rb") as file:
+        return base64.b64encode(file.read()).decode("utf-8")
 
+msgs = [{"role": "user",
+            "content": [
+                {"type": "text", "text": "Generate two sections of summary for the answer of each question. Each summary should be a separate JSON object, labelled by question number and summary number."},
+            ],
+}]
+
+for i in range(count):
+    encodedImage = encodeImage(f"Back end/ExP/electromag/CRIB_EP01_{i+1}.png")
+    
+    msgs[0]["content"].append({"type":"image_url", "image_url":{"url":f"data:image/png;base64,{encodedImage}"}, "detail":"low"})
+
+load_dotenv(".env")
 
 client = OpenAI(api_key=os.getenv("API_KEY"))
 
 response = client.chat.completions.create(
     model="gpt-4o",
-    messages=[
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": "Generate two sections of summary for the answer of each question. Each summary should be a separate JSON object, labelled by question number and summary number."},
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/png;base64,{}",
-                    },
-                },
-            ],
-        }
-    ],
+    messages=msgs,
     max_tokens=2048,
 )
 
