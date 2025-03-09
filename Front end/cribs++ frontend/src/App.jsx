@@ -218,26 +218,30 @@ function CustomHint({questionIndex, paperIndex, moduleName}) {
   return (
     <>
       <div className="input-group">
-        <input id="file" type="file" onChange={async (event) => {
+        <input id={"file"+paperIndex+"-"+questionIndex} type="file"  style={{display: "none"}} onChange={async (event) => {
               if (event.target.files) {
                 setFile(event.target.files[0]);
               }
         }} />
       </div>
-      {file && (
-        <section>
-          File details:
-          <ul>
-            <li>Name: {file.name}</li>
-            <li>Type: {file.type}</li>
-            <li>Size: {file.size} bytes</li>
-          </ul>
-        </section>
-      )}
 
-      {file && (
+      {!file && (
         <button 
           onClick={async (event) => {
+            document.getElementById("file"+paperIndex+"-"+questionIndex).click();
+
+            let filePromise = new Promise(resolve => {
+              const fileInput = document.getElementById("file"+paperIndex+"-"+questionIndex);
+              
+              fileInput.addEventListener('change', function handleChange(event) {
+                fileInput.removeEventListener('change', handleChange);
+                resolve(event.target.files[0]);
+              }, { once: true }); 
+            });
+            
+            console.log("bef");
+            const file = await filePromise; 
+            console.log("after");
             if (file) {
               console.log('Uploading file...');
           
